@@ -6,6 +6,19 @@ Apr 03, 2020
 import os 
 import json 
 import pandas as pd
+import csv 
+import subprocess
+import numpy as np
+import shutil
+from git import Repo
+from git import exc 
+import time 
+from datetime import datetime
+
+def giveTimeStamp():
+  tsObj = time.time()
+  strToret = datetime.fromtimestamp(tsObj).strftime('%Y-%m-%d %H:%M:%S')
+  return strToret
 
 def getJSONData(dir_):
     allContent = []
@@ -32,13 +45,169 @@ def getJSONData(dir_):
                                 allContent.append( (name, url_, fork, watchers, lang, issues, private, date_) )
                                 tracker.append(name) 
     df_ = pd.DataFrame(allContent)
-    df_.to_csv('ALL_REPOS.csv', index=False, encoding='utf-8') 
+    df_.to_csv('ALL_REPOS.csv', index=False, header=['NAME', 'URL' , 'FORK_FLAG', 'WATCHERS', 'LANG', 'ISSUES', 'PRIVATE', 'DATE']  , encoding='utf-8') 
 
+def cloneRepo(repo_name, target_dir):
+    cmd_ = "git clone " + repo_name + " " + target_dir 
+    try:
+       subprocess.check_output(['bash','-c', cmd_])    
+    except subprocess.CalledProcessError:
+       print('Skipping this repo ... trouble cloning repo:', repo_name )
+
+def dumpContentIntoFile(strP, fileP):
+    fileToWrite = open( fileP, 'w')
+    fileToWrite.write(strP )
+    fileToWrite.close()
+    return str(os.stat(fileP).st_size)
+
+def deleteRepo(dirName, type_):
+    print(':::' + type_ + ':::Deleting ', dirName)
+    try:
+        if os.path.exists(dirName):
+            shutil.rmtree(dirName)
+    except OSError:
+        print('Failed deleting, will try manually')             
+
+
+def getDevCount(full_path_to_repo, branchName='master', explore=1000):
+    repo_emails = []
+    all_commits = []
+    repo_emails = []
+    if os.path.exists(full_path_to_repo):
+        repo_  = Repo(full_path_to_repo)
+        try:
+           all_commits = list(repo_.iter_commits(branchName))   
+        except exc.GitCommandError:
+           print('Skipping this repo ... due to branch name problem', full_path_to_repo )
+        if len( all_commits ) < explore:
+            for commit_ in all_commits:
+                commit_hash = commit_.hexsha
+                emails = getDevEmailForCommit(full_path_to_repo, commit_hash)
+                repo_emails = repo_emails + emails
+        else:
+            repo_emails = [ str(x_) for x_ in range(10) ]
+    return len(repo_emails) 
+
+
+def cloneRepos(repo_list): 
+    counter = 0     
+    str_ = ''
+    for repo_ in repo_list: 
+            counter += 1 
+            print('Cloning ', repo_ )
+            dirName = '/Users/arahman/COVID19_REPOS/' + repo_.split('/')[-1] + '@' + repo_.split('/')[-2] ## '/' at the end messes up the index 
+            cloneRepo(repo_, dirName )
+            ### get file count 
+            all_fil_cnt = sum([len(files) for r_, d_, files in os.walk(dirName)])
+            if (all_fil_cnt <= 0):
+               deleteRepo(dirName, 'NO_FILES')
+            else:  
+                dev_count = getDevCount(dirName)             
+            str_ = str_ + str(counter) + ',' +  repo_ + ',' + dirName + ',' + ','  + str(dev_count) + ',' + '\n'
+
+
+
+def getDevEmailForCommit(repo_path_param, hash_):
+    author_emails = []
+
+    cdCommand     = "cd " + repo_path_param + " ; "
+    commitCountCmd= " git log --format='%ae'" + hash_ + "^!"
+    command2Run   = cdCommand + commitCountCmd
+
+    author_emails = str(subprocess.check_output(['bash','-c', command2Run]))
+    author_emails = author_emails.split('\n')
+    author_emails = [x_.replace(hash_, '') for x_ in author_emails if x_ != '\n' and '@' in x_ ] 
+    author_emails = [x_.replace('^', '') for x_ in author_emails if x_ != '\n' and '@' in x_ ] 
+    author_emails = [x_.replace('!', '') for x_ in author_emails if x_ != '\n' and '@' in x_ ] 
+    author_emails = [x_.replace('\\n', ',') for x_ in author_emails if x_ != '\n' and '@' in x_ ] 
+    try:
+        author_emails = author_emails[0].split(',')
+        author_emails = [x_ for x_ in author_emails if len(x_) > 3 ] 
+        author_emails = list(np.unique(author_emails) )
+    except IndexError as e_:
+        pass
+    return author_emails  
+
+def days_between(d1_, d2_): ## pass in date time objects, if string see commented code 
+    # d1_ = datetime.strptime(d1_, "%Y-%m-%d")
+    # d2_ = datetime.strptime(d2_, "%Y-%m-%d")
+    return abs((d2_ - d1_).days)
+
+
+def getDevDayCount(full_path_to_repo, branchName='master', explore=1000):
+    repo_emails = []
+    all_commits = []
+    repo_emails = []
+    all_time_list = []
+    if os.path.exists(full_path_to_repo):
+        repo_  = Repo(full_path_to_repo)
+        try:
+           all_commits = list(repo_.iter_commits(branchName))   
+        except exc.GitCommandError:
+           print('Skipping this repo ... due to branch name problem', full_path_to_repo )
+        for commit_ in all_commits:
+                commit_hash = commit_.hexsha
+
+                emails = getDevEmailForCommit(full_path_to_repo, commit_hash)
+                repo_emails = repo_emails + emails
+
+                timestamp_commit = commit_.committed_datetime
+                str_time_commit  = timestamp_commit.strftime('%Y-%m-%d') ## date with time 
+                all_time_list.append( str_time_commit )
+
+    else:
+        repo_emails = [ str(x_) for x_ in range(10) ]
+    all_day_list   = [datetime(int(x_.split('-')[0]), int(x_.split('-')[1]), int(x_.split('-')[2]), 12, 30) for x_ in all_time_list]
+    all_day_list   = all_day_list + [datetime(2020, 4, 4, 12, 30)]
+    min_day        = min(all_day_list) 
+    max_day        = max(all_day_list) 
+    ds_life_days   = days_between(min_day, max_day)
+    ds_life_months = round(float(ds_life_days)/float(30), 5)
     
+    return len(repo_emails) , len(all_commits) , ds_life_days, ds_life_months     
 
-
+def performFurtherChecks(root_dir_path):
+    list_subfolders_with_paths = [f.path for f in os.scandir(root_dir_path) if f.is_dir()]
+    all_list = []
+    count    = 0 
+    for dirName in list_subfolders_with_paths:
+        count += 1
+        print(dirName)  
+        dev_count, all_file_count = 0 , 0 
+        all_file_count                                 = sum([len(files) for r_, d_, files in os.walk(dirName)]) 
+        dev_count, commit_count, age_days, age_months  = getDevDayCount(dirName)
+        tup = ( count,  dirName, dev_count, all_file_count, commit_count, age_months)
+        print('*'*10)
+        all_list.append( tup ) 
+    df_ = pd.DataFrame( all_list ) 
+    df_.to_csv('COVID19_BREAKDOWN.csv', header=['INDEX', 'REPO', 'DEVS', 'FILES', 'COMMITS', 'AGE_MONTHS'] , index=False, encoding='utf-8')    
 
 
 if __name__=='__main__':
-    json_dir = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/'
-    getJSONData(json_dir)
+    # json_dir = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/'
+    # getJSONData(json_dir)
+
+    # repos_df = pd.read_csv('/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/REPOS2DLOAD.csv')
+    # list_    = repos_df['URL'].tolist()
+    # list_ = np.unique(list_)
+
+    # print('Repos to download:', len(list_)) 
+    # cloneRepos(list_)
+
+
+    t1 = time.time()
+    print('Started at:', giveTimeStamp() )
+    print('*'*100 )
+
+    performFurtherChecks('/Users/arahman/COVID19_REPOS/')   
+    # https://api.github.com/repos/CodeForPhilly/chime/issues  
+
+    print('*'*100 )
+    print('Ended at:', giveTimeStamp() )
+    print('*'*100 )
+    t2 = time.time()
+    time_diff = round( (t2 - t1 ) / 60, 5) 
+    print('Duration: {} minutes'.format(time_diff) )
+    print( '*'*100  )  
+
+ 
