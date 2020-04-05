@@ -183,17 +183,18 @@ def performFurtherChecks(root_dir_path):
     df_.to_csv('COVID19_BREAKDOWN.csv', header=['INDEX', 'REPO', 'DEVS', 'FILES', 'COMMITS', 'AGE_MONTHS'] , index=False, encoding='utf-8')    
 
 def preProcess(txt_, replace_char): 
-
-    txt_ = txt_.replace('\n', replace_char)
-    txt_ = txt_.replace('\r', replace_char)
-    txt_ = txt_.replace(',',  replace_char)    
-    txt_ = txt_.replace('\t', replace_char)
-    txt_ = txt_.replace('&',  replace_char)  
-    txt_ = txt_.replace('#',  replace_char)
-    txt_ = txt_.replace('=',  replace_char)  
-    txt_ = txt_.replace('-',  replace_char)  
-    txt_ = txt_.lower()
-
+    if(type(txt_) == str):
+        txt_ = txt_.replace('\n', replace_char)
+        txt_ = txt_.replace('\r', replace_char)
+        txt_ = txt_.replace(',',  replace_char)    
+        txt_ = txt_.replace('\t', replace_char)
+        txt_ = txt_.replace('&',  replace_char)  
+        txt_ = txt_.replace('#',  replace_char)
+        txt_ = txt_.replace('=',  replace_char)  
+        txt_ = txt_.replace('-',  replace_char)  
+        txt_ = txt_.lower()
+    else:
+        txt_ = 'NOT_FOUND'
     return txt_ 
 
 def getIssueDataFrame(repo_name_file, json_dir, out_file): 
@@ -205,9 +206,12 @@ def getIssueDataFrame(repo_name_file, json_dir, out_file):
     allContent = []
     for repo_ in repos:
         repo_dir, json_file = repo_ 
+        github_name = repo_dir.split('@')[-1] + '/' + repo_dir.split('@')[0]
         if os.path.exists(json_file):
             with open(json_file) as jsonfile:
                 json_content = json.load(jsonfile)
+                if (len(json_content) > 100 ):
+                    print(github_name) 
                 for issue_content in json_content:
                     url_        = issue_content['url']
                     title       = issue_content['title'] 
@@ -248,8 +252,8 @@ if __name__=='__main__':
     print('*'*100 )
 
     repo_list_final    = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
-    issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/issues_json/'
-    issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
+    issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/closed_issues_json/'
+    issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_CLOSED_ISSUES.csv'
     getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
 
     print('*'*100 )
