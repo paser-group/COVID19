@@ -262,6 +262,19 @@ def getREADME(csv_file, dir_):
                         print('*'*50)
                         print('='*100)             
 
+def joinIssues(type_, issues_, output_):
+    temp_list = []
+    type_df   = pd.read_csv(type_)
+    the_repos = list( np.unique(type_df['REPO'].tolist()) )
+    for repo_ in the_repos:
+        type_ = type_df[type_df['REPO']==repo_]['TYPE'].tolist()[0]
+        temp_list.append( (repo_, type_) ) 
+    temp_df  = pd.DataFrame( temp_list, columns =['REPO', 'REPO_TYPE'] ) 
+    issue_df = pd.read_csv( issues_ )
+    full_issue_df = temp_df.merge( issue_df, on =['REPO'] ) 
+    print(full_issue_df.head())
+    full_issue_df.to_csv(output_, index=False, header=['REPO', 'REPO_TYPE', 'JSON', 'URL' , 'TITLE', 'CREATE', 'CLOSED', 'COMMENT', 'BODY', 'LABEL_NAME', 'LABEL_DESC']  , encoding='utf-8')             
+
 
 
 
@@ -286,16 +299,20 @@ if __name__=='__main__':
     # issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_CLOSED_ISSUES.csv'
     # getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
 
-    issue_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ALL_ISSUES.csv'
-    repo_dir   = '/Users/arahman/COVID19_REPOS/'
-    out_file   = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ALL_README.csv'
-    getREADME( issue_file, repo_dir ) 
+    # issue_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
+    # repo_dir   = '/Users/arahman/COVID19_REPOS/'
+    # getREADME( issue_file, repo_dir ) 
     '''
 
 
     t1 = time.time()
     print('Started at:', giveTimeStamp() )
     print('*'*100 )
+
+    repo_type_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/REPO_TYPE.csv'
+    repo_issues_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/RAW_ISSUES.csv'
+    out_fil = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
+    joinIssues(repo_type_file, repo_issues_file, out_fil) 
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )
