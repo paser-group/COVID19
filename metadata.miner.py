@@ -182,6 +182,52 @@ def performFurtherChecks(root_dir_path):
     df_ = pd.DataFrame( all_list ) 
     df_.to_csv('COVID19_BREAKDOWN.csv', header=['INDEX', 'REPO', 'DEVS', 'FILES', 'COMMITS', 'AGE_MONTHS'] , index=False, encoding='utf-8')    
 
+def preProcess(txt_, replace_char): 
+
+    txt_ = txt_.replace('\n', replace_char)
+    txt_ = txt_.replace('\r', replace_char)
+    txt_ = txt_.replace(',',  replace_char)    
+    txt_ = txt_.replace('\t', replace_char)
+    txt_ = txt_.replace('&',  replace_char)  
+    txt_ = txt_.replace('#',  replace_char)
+    txt_ = txt_.replace('=',  replace_char)  
+    txt_ = txt_.replace('-',  replace_char)  
+    txt_ = txt_.lower()
+
+    return txt_ 
+
+def getIssueDataFrame(repo_name_file, json_dir, out_file): 
+    repo_df   = pd.read_csv(repo_name_file) 
+    repo_dirs = np.unique(repo_df['REPO'].tolist()  )
+    repos     = [x_.split('/')[-1] for x_ in repo_dirs]
+    # print(repos) 
+    repos      = [(x_, json_dir  +  x_.split('@')[-1] + '_' + x_.split('@')[0] + '.json' ) for x_ in repos]
+    allContent = []
+    for repo_ in repos:
+        repo_dir, json_file = repo_ 
+        if os.path.exists(json_file):
+            with open(json_file) as jsonfile:
+                json_content = json.load(jsonfile)
+                for issue_content in json_content:
+                    url_        = issue_content['url']
+                    title       = issue_content['title'] 
+                    title       = preProcess(title, ' ')
+                    create_date = issue_content['created_at']
+                    close_date  = issue_content['closed_at']
+                    comment_cnt = issue_content['comments']
+                    body_       = issue_content['body']
+                    body_       = preProcess(body_, ' ')
+                    label_list  = issue_content['labels']
+                    for label_ in label_list:
+                        label_name = label_['name']
+                        label_name = preProcess(label_name, ' ')                        
+                        label_desc = label_['description']
+                        label_desc = preProcess(label_desc, ' ')  
+                        the_tup = ( repo_dir, json_file, url_, title, create_date, close_date, comment_cnt, body_, label_name, label_desc )
+                        allContent.append( the_tup )
+    df_ = pd.DataFrame(allContent)
+    df_.to_csv(out_file, index=False, header=['REPO', 'JSON', 'URL' , 'TITLE', 'CREATE', 'CLOSED', 'COMMENT', 'BODY', 'LABEL_NAME', 'LABEL_DESC']  , encoding='utf-8')             
+
 
 if __name__=='__main__':
     # json_dir = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/'
@@ -194,13 +240,17 @@ if __name__=='__main__':
     # print('Repos to download:', len(list_)) 
     # cloneRepos(list_)
 
+    # performFurtherChecks('/Users/arahman/COVID19_REPOS/')   
+    # https://api.github.com/repos/CodeForPhilly/chime/issues  
 
     t1 = time.time()
     print('Started at:', giveTimeStamp() )
     print('*'*100 )
 
-    performFurtherChecks('/Users/arahman/COVID19_REPOS/')   
-    # https://api.github.com/repos/CodeForPhilly/chime/issues  
+    repo_list_final    = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
+    issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/issues_json/'
+    issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
+    getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )
