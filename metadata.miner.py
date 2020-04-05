@@ -14,6 +14,8 @@ from git import Repo
 from git import exc 
 import time 
 from datetime import datetime
+import markdown
+from bs4 import BeautifulSoup
 
 def giveTimeStamp():
   tsObj = time.time()
@@ -239,8 +241,33 @@ def getIssueDataFrame(repo_name_file, json_dir, out_file):
     df_ = pd.DataFrame(allContent)
     df_.to_csv(out_file, index=False, header=['REPO', 'JSON', 'URL' , 'TITLE', 'CREATE', 'CLOSED', 'COMMENT', 'BODY', 'LABEL_NAME', 'LABEL_DESC']  , encoding='utf-8')             
 
+def getREADME(csv_file, dir_):
+    df_ = pd.read_csv(csv_file) 
+    repo_dirs = np.unique( df_['REPO'].tolist() )
+    for repo_ in repo_dirs:
+        full_repo_path = dir_ + repo_ 
+        if (os.path.exists( full_repo_path ) ):
+            for root_, dirnames, filenames in os.walk(full_repo_path):
+                for file_ in filenames:
+                    full_path_file = os.path.join(root_, file_) 
+                    if(full_path_file.endswith('.md')  and ('README'  in full_path_file)):   
+                        print('='*100)             
+                        print('*'*50)
+                        print(repo_ + ':::::::::::')
+                        print('*'*50)
+                        print(full_path_file) 
+                        print('*'*50)
+                        html = markdown.markdown(open( full_path_file  ).read())
+                        print( "".join(BeautifulSoup(html).findAll(text=True))  )
+                        print('*'*50)
+                        print('='*100)             
+
+
+
 
 if __name__=='__main__':
+
+    '''
     # json_dir = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/'
     # getJSONData(json_dir)
 
@@ -254,14 +281,21 @@ if __name__=='__main__':
     # performFurtherChecks('/Users/arahman/COVID19_REPOS/')   
     # https://api.github.com/repos/CodeForPhilly/chime/issues  
 
-    t1 = time.time()
-    print('Started at:', giveTimeStamp() )
-    print('*'*100 )
-
     # repo_list_final    = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
     # issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/closed_issues_json/'
     # issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_CLOSED_ISSUES.csv'
     # getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
+
+    issue_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ALL_ISSUES.csv'
+    repo_dir   = '/Users/arahman/COVID19_REPOS/'
+    out_file   = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ALL_README.csv'
+    getREADME( issue_file, repo_dir ) 
+    '''
+
+
+    t1 = time.time()
+    print('Started at:', giveTimeStamp() )
+    print('*'*100 )
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )
