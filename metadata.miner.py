@@ -208,10 +208,12 @@ def getIssueDataFrame(repo_name_file, json_dir, out_file):
         repo_dir, json_file = repo_ 
         github_name = repo_dir.split('@')[-1] + '/' + repo_dir.split('@')[0]
         if os.path.exists(json_file):
+            # print(json_file) 
             with open(json_file) as jsonfile:
                 json_content = json.load(jsonfile)
-                if (len(json_content) > 100 ):
+                if (len(json_content) > 95 ):
                     print(github_name) 
+                # print(json_content) 
                 for issue_content in json_content:
                     url_        = issue_content['url']
                     title       = issue_content['title'] 
@@ -222,11 +224,16 @@ def getIssueDataFrame(repo_name_file, json_dir, out_file):
                     body_       = issue_content['body']
                     body_       = preProcess(body_, ' ')
                     label_list  = issue_content['labels']
-                    for label_ in label_list:
-                        label_name = label_['name']
-                        label_name = preProcess(label_name, ' ')                        
-                        label_desc = label_['description']
-                        label_desc = preProcess(label_desc, ' ')  
+                    if len(label_list) > 0:
+                        for label_ in label_list:
+                            label_name = label_['name']
+                            label_name = preProcess(label_name, ' ')                        
+                            label_desc = label_['description']
+                            label_desc = preProcess(label_desc, ' ')  
+                            the_tup = ( repo_dir, json_file, url_, title, create_date, close_date, comment_cnt, body_, label_name, label_desc )
+                            allContent.append( the_tup )
+                    else:
+                        label_name, label_desc = 'NOT_FOUND', 'NOT_FOUND'
                         the_tup = ( repo_dir, json_file, url_, title, create_date, close_date, comment_cnt, body_, label_name, label_desc )
                         allContent.append( the_tup )
     df_ = pd.DataFrame(allContent)
@@ -251,10 +258,10 @@ if __name__=='__main__':
     print('Started at:', giveTimeStamp() )
     print('*'*100 )
 
-    repo_list_final    = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
-    issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/closed_issues_json/'
-    issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_CLOSED_ISSUES.csv'
-    getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
+    # repo_list_final    = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
+    # issues_dir         = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/closed_issues_json/'
+    # issues_output_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_CLOSED_ISSUES.csv'
+    # getIssueDataFrame(repo_list_final, issues_dir, issues_output_file) 
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )
