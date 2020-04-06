@@ -302,17 +302,17 @@ if __name__=='__main__':
     # issue_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPOS.csv'
     # repo_dir   = '/Users/arahman/COVID19_REPOS/'
     # getREADME( issue_file, repo_dir ) 
-    '''
 
+    # repo_type_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/REPO_TYPE.csv'
+    # repo_issues_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/RAW_ISSUES.csv'
+    # out_fil = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
+    # joinIssues(repo_type_file, repo_issues_file, out_fil) 
+
+    '''
 
     t1 = time.time()
     print('Started at:', giveTimeStamp() )
     print('*'*100 )
-
-    repo_type_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/REPO_TYPE.csv'
-    repo_issues_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/RAW_ISSUES.csv'
-    out_fil = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
-    joinIssues(repo_type_file, repo_issues_file, out_fil) 
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )
