@@ -275,6 +275,34 @@ def joinIssues(type_, issues_, output_):
     print(full_issue_df.head())
     full_issue_df.to_csv(output_, index=False, header=['REPO', 'REPO_TYPE', 'JSON', 'URL' , 'TITLE', 'CREATE', 'CLOSED', 'COMMENT', 'BODY', 'LABEL_NAME', 'LABEL_DESC']  , encoding='utf-8')             
 
+def giveMeOnlyDate(x_):
+    x_ = x_.split('T')[0]
+    date2ret = datetime( int(x_.split('-')[0]), int(x_.split('-')[1]), int(x_.split('-')[2]) , 12, 30, 30 ) 
+    return date2ret 
+
+def getWeekWiseData(week_df, out_fil): 
+    full_list = [] 
+    week_df['ONLY_DATE'] = week_df['DATE'].apply(giveMeOnlyDate)
+    valid_weeks = ['2019-12-22', '2019-12-29', 
+                   '2020-01-07', '2020-01-14', '2020-01-21', 
+                   '2020-01-28', '2020-02-07', '2020-02-15', 
+                   '2020-02-22', '2020-02-29', '2020-03-07', 
+                   '2020-03-15', '2020-03-22', '2020-03-29', 
+                   '2020-04-07'
+    ]
+    for week_ in valid_weeks: 
+        week_       = week_.split('T')[0]
+        # print(week_) 
+        dt_week     = datetime( int(week_.split('-')[0]), int(week_.split('-')[1]), int(week_.split('-')[2]) , 12, 30, 30) 
+        per_week_df = week_df[ week_df['ONLY_DATE'] <= dt_week ] 
+        # print(per_week_df) 
+        per_week_repos = np.unique( per_week_df['REPO_DIR'].tolist() )
+        proj_count     = len(per_week_repos)
+        full_list.append( (week_, proj_count )  )
+    df_ = pd.DataFrame( full_list )
+    df_.to_csv( out_fil, index=False, header=['WEEK', 'COUNT']  , encoding='utf-8' )
+    
+
 
 
 
@@ -308,11 +336,17 @@ if __name__=='__main__':
     # out_fil = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_ISSUES.csv'
     # joinIssues(repo_type_file, repo_issues_file, out_fil) 
 
+    repo_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/FINAL_REPO_CATEGS.csv'
+    repo_df   = pd.read_csv(repo_file)
+    getWeekWiseData(repo_df, '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/WEEK_REPOS.csv')
+
+
     '''
 
     t1 = time.time()
     print('Started at:', giveTimeStamp() )
     print('*'*100 )
+
 
     print('*'*100 )
     print('Ended at:', giveTimeStamp() )

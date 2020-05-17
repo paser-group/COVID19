@@ -239,18 +239,24 @@ if __name__ == '__main__':
     repo_categ_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/FINAL_REPO_CATEGS.csv'
     bug_categ_file  = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/FINAL_BUG_CATEGS.csv'
 
-    # ans2part1(bug_categ_file)
-    # print('='*100) 
-    # ans2part2(repo_categ_file, bug_categ_file) 
-    # print('='*100)     
-    # perRepoBugs(repo_categ_file, bug_categ_file)     
-    # print('='*100)         
+    print('FREQUNECY PER BUG CATEGORY')
+    ans2part1(bug_categ_file)
+    print('='*100) 
+    print('FREQUNECY PER REPO CATEGORY PER BUG CATEGORY')
+    ans2part2(repo_categ_file, bug_categ_file) 
+    print('='*100)     
+    print('FREQUNECY PER REPO CATEGORY ')
+    perRepoBugs(repo_categ_file, bug_categ_file)     
+    print('='*100)         
 
-    # overallBugResolution(bug_categ_file)     
-    # print('='*100)          
-    # 
-    # durationRepoCategBugCateg(repo_categ_file, bug_categ_file)   
-    # print('='*100)              
+    print('DURATION PER BUG CATEGORY')
+    overallBugResolution(bug_categ_file)     
+    print('='*100)          
 
+    print('DURATION PER BUG CATEGORY PER REPO CATEGORY')    
+    durationRepoCategBugCateg(repo_categ_file, bug_categ_file)   
+    print('='*100)              
+
+    print('DURATION PER REPO CATEGORY')    
     durationRepoCateg(repo_categ_file, bug_categ_file)   
     print('='*100)              
