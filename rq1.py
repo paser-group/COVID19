@@ -114,9 +114,9 @@ def ans2rq1(file_name, issue_file_name):
 
                 			
 if __name__=='__main__':
-   meta_file      = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/META_REPOS.csv'
-   local_file     = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/LOCAL_REPOS.csv'
-   summ_repo_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/results/SUMMARY_REPOS.csv'
+   meta_file      = 'Research/SciSoft/COVID19/results/META_REPOS.csv'
+   local_file     = 'Research/SciSoft/COVID19/results/LOCAL_REPOS.csv'
+   summ_repo_file = 'Research/SciSoft/COVID19/results/SUMMARY_REPOS.csv'
 
 #    meta_df  = pd.read_csv(meta_file) 
 #    local_df = pd.read_csv(local_file) 
@@ -124,7 +124,7 @@ if __name__=='__main__':
 #    full_df.to_csv(summ_repo_file, index=False, header=['REPO_DIR', 'DEVS', 'COMMITS', 'FILES' , 'NAME', 'LINK', 'RELEASES', 'WATCHERS', 'ISSUES', 'LANG', 'DATE']  , encoding='utf-8')                
    
    
-   repo_categ_file = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/FINAL_REPO_CATEGS.csv'
-   issue_file      = '/Users/arahman/Documents/OneDriveWingUp/OneDrive-TennesseeTechUniversity/Research/SciSoft/COVID19/dataset/ALL_REPOS_ONLY_ISSUES.csv'
+   repo_categ_file = 'Research/SciSoft/COVID19/dataset/FINAL_REPO_CATEGS.csv'
+   issue_file      = 'Research/SciSoft/COVID19/dataset/ALL_REPOS_ONLY_ISSUES.csv'
    ans2rq1(repo_categ_file, issue_file)
 
